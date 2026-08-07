@@ -1,0 +1,18 @@
+[
+  {
+    "rule_id": "GB50010-01",
+    "title": "混凝土结构设计规范 - 主梁受力筋规格限制",
+    "component_type": "主梁",
+    "max_weight_kg": 5000.0,
+    "allowed_specifications": ["HRB400", "HRB400E", "HRB500", "HRB500E"],
+    "description": "主梁纵向受力钢筋应优先选用 HRB400E 或 HRB500E 级抗震钢筋，单件重量不宜超过 5000kg。"
+  },
+  {
+    "rule_id": "GB50010-02",
+    "title": "混凝土结构设计规范 - 框架柱受力筋配筋规则",
+    "component_type": "框架柱",
+    "max_weight_kg": 8000.0,
+    "allowed_specifications": ["HRB400E", "HRB500E"],
+    "description": "框架柱纵向受力钢筋必须采用带 E 标志的抗震钢筋。"
+  }
+]

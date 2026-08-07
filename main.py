@@ -1,24 +1,20 @@
-import sqlite3
+from fastapi import FastAPI, Depends, HTTPException, status, Query, Response, UploadFile, File
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import HTMLResponse
+from pydantic import BaseModel, Field  # <-- 确保加上这句导入！
+import sqlite3, json
 from typing import List, Optional
 
 from database import init_db, get_db
-import schemas
-import crud
-from fastapi import FastAPI, Depends, HTTPException, status, Query, Response, UploadFile, File
-import json
-
-init_db()
-
-from fastapi import FastAPI
-from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.responses import HTMLResponse
+import schemas, crud
 from ai_schemas import AgentParseResult
+from agent import rebar_agent
 
 app = FastAPI(
     title="工程图纸构件元数据解析与存储 API",
-    version="v1.0.0",  # 1. 修改右上角版本号
-    description="提供工程构件数据的录入、校验、检索与导出服务",
-    docs_url=None      # 关闭默认 docs，使用自定义 docs
+    version="v2.0.0 (AI Agent 增强版)",
+    description="提供构件数据的单条录入、批量导入、AI Agent 解析、规范 RAG 校验与多格式导出服务",
+    docs_url=None
 )
 
 # 2. 自定义 /docs 页面，通过 CSS 隐藏 /openapi.json 链接
@@ -39,13 +35,18 @@ async def custom_swagger_ui_html():
 
 @app.get("/", tags=["系统"])
 def read_root():
-    return {
-        "message": "工程图纸构件元数据解析与存储 API",
-        "docs_url": "/docs",
-        "status": "online",
-        "version": "1.1.0"
-    }
+    return {"message": "工程图纸构件元数据 API v2.0", "docs_url": "/docs", "status": "online"}
 
+# 1. AI Agent 接口
+class AIParseInput(BaseModel):
+    text: str = Field(..., example="长江大桥一标段 DWG-2026-001 主梁 HRB400E Φ22 10 1500.5kg")
+
+@app.post("/api/v1/ai/parse-and-insert", response_model=AgentParseResult, tags=["AI Agent 智能体"])
+def ai_parse_and_insert(payload: AIParseInput, conn: sqlite3.Connection = Depends(get_db)):
+    """AI Agent：自然语言解析 -> RAG 规范校验 -> 自动调用 Tool 入库/打上待复核标签"""
+    return rebar_agent.process_unstructured_text(text=payload.text, db_conn=conn)
+
+#2 普通接口
 @app.post("/api/v1/components", response_model=schemas.ComponentResponse, status_code=status.HTTP_201_CREATED, tags=["构件管理"])
 def create_new_component(component: schemas.ComponentCreate, conn: sqlite3.Connection = Depends(get_db)):
     """单条录入构件元数据"""
@@ -149,7 +150,3 @@ def get_component(component_id: int, conn: sqlite3.Connection = Depends(get_db))
         raise HTTPException(status_code=404, detail=f"未找到 ID 为 {component_id} 的构件记录")
     return db_component
 
-@app.post("/api/v1/ai/parse-and-insert", response_model=AgentParseResult, tags=["AI Agent 智能体"])
-def ai_parse_and_insert(payload: AIParseInput, conn: sqlite3.Connection = Depends(get_db)):
-    """AI Agent：非结构化文本解析 -> RAG 规范校验 -> 自动决定调用入库 Tool 或打上待复核标签"""
-    return rebar_agent.process_unstructured_text(text=payload.text, db_conn=conn)
