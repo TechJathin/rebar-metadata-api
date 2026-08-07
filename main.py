@@ -12,6 +12,7 @@ init_db()
 from fastapi import FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.responses import HTMLResponse
+from ai_schemas import AgentParseResult
 
 app = FastAPI(
     title="工程图纸构件元数据解析与存储 API",
@@ -70,19 +71,6 @@ def list_components(
 def get_components_summary(conn: sqlite3.Connection = Depends(get_db)):
     """新功能 2: 获取汇总统计信息（总条数、总数量、总重量及分类分布）"""
     return crud.get_summary(conn=conn)
-
-# @app.get("/api/v1/components/export/csv", tags=["统计与导出"])
-# def export_components_csv(conn: sqlite3.Connection = Depends(get_db)):
-#     """导出全部数据为 CSV 文件（彻底解决 Excel 中文乱码问题）"""
-#     csv_text = crud.export_components_to_csv(conn=conn)
-#     # 使用字节串 b"\xef\xbb\xbf" 添加 BOM 标头，提示 Excel 自动使用 UTF-8 编码打开
-#     csv_bytes = b"\xef\xbb\xbf" + csv_text.encode("utf-8")
-#     return Response(
-#         content=csv_bytes,
-#         media_type="text/csv; charset=utf-8",
-#         headers={"Content-Disposition": "attachment; filename=rebar_components.csv"}
-#     )
-
 
 
 @app.delete("/api/v1/components/{component_id}", tags=["构件管理"])
