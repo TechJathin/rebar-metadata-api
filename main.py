@@ -83,12 +83,7 @@ def export_components_csv(conn: sqlite3.Connection = Depends(get_db)):
         headers={"Content-Disposition": "attachment; filename=rebar_components.csv"}
     )
 
-@app.get("/api/v1/components/{component_id}", response_model=schemas.ComponentResponse, tags=["构件管理"])
-def get_component(component_id: int, conn: sqlite3.Connection = Depends(get_db)):
-    db_component = crud.get_component_by_id(conn=conn, component_id=component_id)
-    if not db_component:
-        raise HTTPException(status_code=404, detail=f"未找到 ID 为 {component_id} 的构件记录")
-    return db_component
+
 
 @app.delete("/api/v1/components/{component_id}", tags=["构件管理"])
 def remove_component(component_id: int, conn: sqlite3.Connection = Depends(get_db)):
@@ -158,3 +153,10 @@ def export_components_file(
         )
     else:
         raise HTTPException(status_code=400, detail=f"不支持的导出格式 '{format}'，可选值: csv, excel, json")
+
+@app.get("/api/v1/components/{component_id}", response_model=schemas.ComponentResponse, tags=["构件管理"])
+def get_component(component_id: int, conn: sqlite3.Connection = Depends(get_db)):
+    db_component = crud.get_component_by_id(conn=conn, component_id=component_id)
+    if not db_component:
+        raise HTTPException(status_code=404, detail=f"未找到 ID 为 {component_id} 的构件记录")
+    return db_component
