@@ -51,9 +51,10 @@ def get_components_summary(conn: sqlite3.Connection = Depends(get_db)):
 
 @app.get("/api/v1/components/export/csv", tags=["统计与导出"])
 def export_components_csv(conn: sqlite3.Connection = Depends(get_db)):
-    """新功能 3: 导出全部数据为 CSV 表格文件（自动带 UTF-8 BOM 兼容 Excel 打开）"""
-    csv_data = crud.export_components_to_csv(conn=conn)
-    csv_bytes = "\xef\xbb\xbf" + csv_data
+    """导出全部数据为 CSV 文件（彻底解决 Excel 中文乱码问题）"""
+    csv_text = crud.export_components_to_csv(conn=conn)
+    # 使用字节串 b"\xef\xbb\xbf" 添加 BOM 标头，提示 Excel 自动使用 UTF-8 编码打开
+    csv_bytes = b"\xef\xbb\xbf" + csv_text.encode("utf-8")
     return Response(
         content=csv_bytes,
         media_type="text/csv; charset=utf-8",
