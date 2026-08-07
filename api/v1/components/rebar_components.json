@@ -1,0 +1,42 @@
+[
+  {
+    "id": 5,
+    "project_name": "长江大桥二标段",
+    "drawing_id": "DWG-2026-001",
+    "component_type": "附梁",
+    "specification": "HRB400E Φ22",
+    "quantity": 1,
+    "weight_kg": 1.0,
+    "created_at": "2026-08-07 01:37:52"
+  },
+  {
+    "id": 4,
+    "project_name": "长江大桥二标段",
+    "drawing_id": "DWG-2026-001",
+    "component_type": "主梁",
+    "specification": "HRB400E Φ22",
+    "quantity": 1,
+    "weight_kg": 1.0,
+    "created_at": "2026-08-07 01:37:47"
+  },
+  {
+    "id": 3,
+    "project_name": "长江大桥一标段",
+    "drawing_id": "DWG-2026-001",
+    "component_type": "附梁",
+    "specification": "HRB400E Φ22",
+    "quantity": 1,
+    "weight_kg": 1.0,
+    "created_at": "2026-08-07 01:37:32"
+  },
+  {
+    "id": 1,
+    "project_name": "长江大桥一标段",
+    "drawing_id": "DWG-2026-001",
+    "component_type": "主梁",
+    "specification": "HRB400E Φ22",
+    "quantity": 1,
+    "weight_kg": 1.0,
+    "created_at": "2026-08-07 01:34:16"
+  }
+]

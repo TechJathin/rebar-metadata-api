@@ -160,3 +160,8 @@ def get_component(component_id: int, conn: sqlite3.Connection = Depends(get_db))
     if not db_component:
         raise HTTPException(status_code=404, detail=f"未找到 ID 为 {component_id} 的构件记录")
     return db_component
+
+@app.post("/api/v1/ai/parse-and-insert", response_model=AgentParseResult, tags=["AI Agent 智能体"])
+def ai_parse_and_insert(payload: AIParseInput, conn: sqlite3.Connection = Depends(get_db)):
+    """AI Agent：非结构化文本解析 -> RAG 规范校验 -> 自动决定调用入库 Tool 或打上待复核标签"""
+    return rebar_agent.process_unstructured_text(text=payload.text, db_conn=conn)
