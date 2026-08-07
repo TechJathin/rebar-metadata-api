@@ -128,10 +128,10 @@ async def upload_components_json_file(file: UploadFile = File(...), conn: sqlite
 
 @app.get("/api/v1/components/export", tags=["统计与导出"])
 def export_components_file(
-    format: str = Query("csv", description="导出格式选项，支持：csv, excel (或 xlsx), json"),
+    format: str = Query("csv", description="导出格式选项：csv, excel, json"),  # 确保这里没有 regex 限制
     conn: sqlite3.Connection = Depends(get_db)
 ):
-    """支持多格式选项的数据文件导出接口（支持 CSV 表格、原生 Excel 电子表格、JSON 文件）"""
+    """支持多格式选项的数据文件导出接口（支持 CSV、Excel、JSON）"""
     fmt = format.lower().strip()
     
     if fmt in ("excel", "xlsx"):
