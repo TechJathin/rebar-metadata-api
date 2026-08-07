@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Query, Response
 import sqlite3
 from typing import List, Optional
 
 from database import init_db, get_db
 import schemas
 import crud
+from fastapi import FastAPI, Depends, HTTPException, status, Query, Response, UploadFile, File
+import json
 
 init_db()
 
@@ -74,3 +75,32 @@ def remove_component(component_id: int, conn: sqlite3.Connection = Depends(get_d
     if not success:
         raise HTTPException(status_code=404, detail=f"未找到 ID 为 {component_id} 的构件记录")
     return {"message": f"ID 为 {component_id} 的构件记录已成功删除"}
+
+# 2. 新增文件上传接口
+@app.post("/api/v1/components/upload-json", response_model=List[schemas.ComponentResponse], status_code=status.HTTP_201_CREATED, tags=["构件管理"])
+async def upload_components_json_file(file: UploadFile = File(...), conn: sqlite3.Connection = Depends(get_db)):
+    """选择/上传本地 .json 文件自动读取并导入构件数据"""
+    # 校验文件扩展名
+    if not file.filename.endswith(".json"):
+        raise HTTPException(status_code=400, detail="只允许上传 .json 格式的文件")
+    
+    # 读取文件内容并解析 JSON
+    try:
+        content = await file.read()
+        data = json.loads(content.decode("utf-8"))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"JSON 文件解析失败，请检查语法格式: {str(e)}")
+    
+    # 转换并校验数据结构
+    try:
+        if isinstance(data, dict):
+            components_to_create = [schemas.ComponentCreate(**data)]
+        elif isinstance(data, list):
+            components_to_create = [schemas.ComponentCreate(**item) for item in data]
+        else:
+            raise HTTPException(status_code=400, detail="JSON 文件根节点必须是对象 {} 或数组 []")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"数据内容字段校验失败: {str(e)}")
+
+    # 批量保存到数据库
+    return crud.create_components_batch(conn=conn, components=components_to_create)

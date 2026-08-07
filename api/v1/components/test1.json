@@ -1,8 +1,18 @@
-{
-  "project_name": "长江大桥一标段",
-  "drawing_id": "DWG-2026-001",
-  "component_type": "主梁",
-  "specification": "HRB400E Φ22",
-  "quantity": 10,
-  "weight_kg": 1500.5
-}
+[
+  {
+    "project_name": "长江大桥四标段",
+    "drawing_id": "DWG-2026-004",
+    "component_type": "剪力墙",
+    "specification": "HRB400E Φ18",
+    "quantity": 15,
+    "weight_kg": 850.0
+  },
+  {
+    "project_name": "长江大桥四标段",
+    "drawing_id": "DWG-2026-004",
+    "component_type": "框架柱",
+    "specification": "HRB500E Φ25",
+    "quantity": 20,
+    "weight_kg": 2400.0
+  }
+]
