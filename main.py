@@ -125,3 +125,36 @@ async def upload_components_json_file(file: UploadFile = File(...), conn: sqlite
 
     # 批量保存到数据库
     return crud.create_components_batch(conn=conn, components=components_to_create)
+
+@app.get("/api/v1/components/export", tags=["统计与导出"])
+def export_components_file(
+    format: str = Query("csv", description="导出格式选项，支持：csv, excel (或 xlsx), json"),
+    conn: sqlite3.Connection = Depends(get_db)
+):
+    """支持多格式选项的数据文件导出接口（支持 CSV 表格、原生 Excel 电子表格、JSON 文件）"""
+    fmt = format.lower().strip()
+    
+    if fmt in ("excel", "xlsx"):
+        excel_bytes = crud.export_components_to_excel(conn=conn)
+        return Response(
+            content=excel_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": "attachment; filename=rebar_components.xlsx"}
+        )
+    elif fmt == "json":
+        json_data = crud.export_components_to_json(conn=conn)
+        return Response(
+            content=json_data.encode("utf-8"),
+            media_type="application/json; charset=utf-8",
+            headers={"Content-Disposition": "attachment; filename=rebar_components.json"}
+        )
+    elif fmt == "csv":
+        csv_text = crud.export_components_to_csv(conn=conn)
+        csv_bytes = b"\xef\xbb\xbf" + csv_text.encode("utf-8")
+        return Response(
+            content=csv_bytes,
+            media_type="text/csv; charset=utf-8",
+            headers={"Content-Disposition": "attachment; filename=rebar_components.csv"}
+        )
+    else:
+        raise HTTPException(status_code=400, detail=f"不支持的导出格式 '{format}'，可选值: csv, excel, json")

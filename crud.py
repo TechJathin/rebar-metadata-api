@@ -3,6 +3,30 @@ import csv
 import io
 from typing import List, Optional, Dict
 from schemas import ComponentCreate
+import openpyxl
+
+def export_components_to_excel(conn: sqlite3.Connection) -> bytes:
+    """生成原生 .xlsx 格式的 Excel 字节流"""
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, project_name, drawing_id, component_type, specification, quantity, weight_kg, created_at FROM rebar_components ORDER BY id ASC")
+    rows = cursor.fetchall()
+    
+    # 创建工作簿与工作表
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "构件数据"
+    
+    # 写入表头
+    headers = ["ID", "项目名称", "图纸编号", "构件类型", "规格型号", "数量", "重量(kg)", "录入时间"]
+    ws.append(headers)
+    
+    # 写入每一行数据
+    for row in rows:
+        ws.append(list(row))
+        
+    output = io.BytesIO()
+    wb.save(output)
+    return output.getvalue()
 
 def create_component(conn: sqlite3.Connection, component: ComponentCreate) -> Dict:
     cursor = conn.cursor()
