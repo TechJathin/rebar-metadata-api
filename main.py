@@ -9,11 +9,32 @@ import json
 
 init_db()
 
+from fastapi import FastAPI
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import HTMLResponse
+
 app = FastAPI(
     title="工程图纸构件元数据解析与存储 API",
-    description="提供工程构件数据的单条录入、批量导入、检索、汇总统计与 CSV 表格导出服务",
-    version="1.1.0"
+    version="v1.0.0",  # 1. 修改右上角版本号
+    description="提供工程构件数据的录入、校验、检索与导出服务",
+    docs_url=None      # 关闭默认 docs，使用自定义 docs
 )
+
+# 2. 自定义 /docs 页面，通过 CSS 隐藏 /openapi.json 链接
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    response = get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - API 文档"
+    )
+    # 注入 CSS 隐藏 /openapi.json 链接与 OAS 3.1 标签
+    hide_link_css = """
+    <style>
+        .swagger-ui .info .link { display: none !important; }
+    </style>
+    """
+    body_content = response.body.decode("utf-8").replace("</head>", f"{hide_link_css}</head>")
+    return HTMLResponse(content=body_content)
 
 @app.get("/", tags=["系统"])
 def read_root():
