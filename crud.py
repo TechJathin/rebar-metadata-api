@@ -4,7 +4,7 @@ import io
 from typing import List, Optional, Dict
 from schemas import ComponentCreate
 import openpyxl
-
+import json
 def export_components_to_excel(conn: sqlite3.Connection) -> bytes:
     """生成原生 .xlsx 格式的 Excel 字节流"""
     cursor = conn.cursor()
@@ -140,3 +140,9 @@ def export_components_to_csv(conn: sqlite3.Connection) -> str:
     for row in rows:
         writer.writerow(list(row))
     return output.getvalue()
+
+def export_components_to_json(conn: sqlite3.Connection) -> str:
+    """导出格式：将所有构件转为美化格式的 JSON 字符串"""
+    rows = get_components(conn=conn, limit=10000)
+    # 加上 default=str，将时间等特殊类型转为字符串，防止 500 报错
+    return json.dumps(rows, ensure_ascii=False, indent=2, default=str)
